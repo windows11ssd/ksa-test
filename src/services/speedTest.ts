@@ -1,3 +1,4 @@
+
 interface SpeedTestResult {
   downloadSpeed: number;
   uploadSpeed: number;
@@ -14,19 +15,34 @@ interface ServerInfo {
   country: string;
 }
 
-// Saudi Arabia test servers
-const KSA_SERVERS = [
-  'https://speed.stc.com.sa/speedtest',
-  'https://speedtest.mobily.com.sa',
-  'https://speedtest.zain.sa'
-];
+// Real test file URLs with different sizes
+const TEST_FILES = {
+  1024: 'https://speed.cloudflare.com/__down?bytes=1048576', // 1MB
+  5120: 'https://speed.cloudflare.com/__down?bytes=5242880', // 5MB
+  10240: 'https://speed.cloudflare.com/__down?bytes=10485760', // 10MB
+  51200: 'https://speed.cloudflare.com/__down?bytes=52428800', // 50MB
+  102400: 'https://speed.cloudflare.com/__down?bytes=104857600', // 100MB
+  512000: 'https://speed.cloudflare.com/__down?bytes=524288000', // 500MB
+  1024000: 'https://speed.cloudflare.com/__down?bytes=1073741824', // 1GB
+};
+
+// Alternative test servers for better accuracy
+const BACKUP_TEST_FILES = {
+  1024: 'https://httpbin.org/bytes/1048576',
+  5120: 'https://httpbin.org/bytes/5242880',
+  10240: 'https://httpbin.org/bytes/10485760',
+  51200: 'https://httpbin.org/bytes/52428800',
+  102400: 'https://httpbin.org/bytes/104857600',
+  512000: 'https://httpbin.org/bytes/524288000',
+  1024000: 'https://httpbin.org/bytes/1073741824',
+};
 
 class SpeedTestService {
   private abortController: AbortController | null = null;
 
   async getServerInfo(): Promise<ServerInfo> {
     try {
-      // Get user's IP and location
+      // Use multiple IP services for better accuracy
       const response = await fetch('https://ipapi.co/json/');
       const data = await response.json();
       
@@ -36,81 +52,210 @@ class SpeedTestService {
         country: data.country_name
       };
     } catch (error) {
-      return {
-        ip: 'Unknown',
-        location: 'Saudi Arabia',
-        country: 'Saudi Arabia'
-      };
+      try {
+        // Fallback to another service
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        return {
+          ip: data.ip,
+          location: 'Saudi Arabia',
+          country: 'Saudi Arabia'
+        };
+      } catch {
+        return {
+          ip: 'Unknown',
+          location: 'Saudi Arabia',
+          country: 'Saudi Arabia'
+        };
+      }
     }
   }
 
-  async measurePing(server: string = 'https://www.google.com'): Promise<number> {
-    const startTime = performance.now();
+  async measurePing(attempts: number = 5): Promise<number> {
+    const pingResults: number[] = [];
     
-    try {
-      await fetch(server, { 
-        method: 'HEAD',
-        mode: 'no-cors',
-        signal: this.abortController?.signal 
-      });
+    for (let i = 0; i < attempts; i++) {
+      const startTime = performance.now();
       
-      const endTime = performance.now();
-      return Math.round(endTime - startTime);
-    } catch (error) {
-      return Math.round(Math.random() * 50 + 20); // Fallback simulation
+      try {
+        // Use a reliable ping endpoint
+        await fetch('https://www.google.com/favicon.ico', { 
+          method: 'HEAD',
+          mode: 'no-cors',
+          cache: 'no-cache',
+          signal: this.abortController?.signal 
+        });
+        
+        const endTime = performance.now();
+        pingResults.push(endTime - startTime);
+      } catch (error) {
+        // If ping fails, try alternative
+        try {
+          await fetch('https://httpbin.org/status/200', { 
+            method: 'HEAD',
+            signal: this.abortController?.signal 
+          });
+          const endTime = performance.now();
+          pingResults.push(endTime - startTime);
+        } catch {
+          pingResults.push(999); // High ping for failed attempts
+        }
+      }
+      
+      // Small delay between ping attempts
+      await this.delay(100);
     }
+    
+    // Return average ping, excluding outliers
+    const sortedPings = pingResults.sort((a, b) => a - b);
+    const middle = Math.floor(sortedPings.length / 2);
+    return Math.round(sortedPings[middle]);
   }
 
   async measureDownloadSpeed(fileSizeKB: number): Promise<number> {
-    const startTime = performance.now();
+    const fileSize = fileSizeKB as keyof typeof TEST_FILES;
+    let testUrl = TEST_FILES[fileSize];
     
-    try {
-      // Create a test URL that returns data of specified size
-      const testUrl = `https://httpbin.org/bytes/${fileSizeKB * 1024}`;
-      
-      const response = await fetch(testUrl, {
-        signal: this.abortController?.signal
-      });
-      
-      const data = await response.arrayBuffer();
-      const endTime = performance.now();
-      
-      const durationSeconds = (endTime - startTime) / 1000;
-      const speedMbps = (data.byteLength * 8) / (durationSeconds * 1000000);
-      
-      return Math.round(speedMbps * 100) / 100;
-    } catch (error) {
-      // Fallback simulation for demo
-      await this.delay(2000);
-      return Math.round((Math.random() * 80 + 20) * 100) / 100;
+    // Multiple attempts for accuracy
+    const speeds: number[] = [];
+    
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const startTime = performance.now();
+        
+        const response = await fetch(testUrl, {
+          signal: this.abortController?.signal,
+          cache: 'no-cache'
+        });
+        
+        if (!response.ok) {
+          throw new Error('Download failed');
+        }
+        
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error('No reader available');
+        
+        let downloadedBytes = 0;
+        
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          downloadedBytes += value?.length || 0;
+        }
+        
+        const endTime = performance.now();
+        const durationSeconds = (endTime - startTime) / 1000;
+        const speedMbps = (downloadedBytes * 8) / (durationSeconds * 1000000);
+        
+        speeds.push(speedMbps);
+        
+      } catch (error) {
+        console.log(`Download attempt ${attempt + 1} failed, trying backup server`);
+        
+        // Try backup server
+        testUrl = BACKUP_TEST_FILES[fileSize];
+        
+        try {
+          const startTime = performance.now();
+          const response = await fetch(testUrl, {
+            signal: this.abortController?.signal,
+            cache: 'no-cache'
+          });
+          
+          const data = await response.arrayBuffer();
+          const endTime = performance.now();
+          
+          const durationSeconds = (endTime - startTime) / 1000;
+          const speedMbps = (data.byteLength * 8) / (durationSeconds * 1000000);
+          
+          speeds.push(speedMbps);
+          break;
+        } catch {
+          if (attempt === 2) {
+            throw new Error('All download attempts failed');
+          }
+        }
+      }
     }
+    
+    // Return the median speed for accuracy
+    speeds.sort((a, b) => a - b);
+    const median = speeds[Math.floor(speeds.length / 2)];
+    return Math.round(median * 100) / 100;
   }
 
   async measureUploadSpeed(fileSizeKB: number): Promise<number> {
-    const startTime = performance.now();
+    // Create real test data
+    const testData = new ArrayBuffer(fileSizeKB * 1024);
+    const view = new Uint8Array(testData);
     
-    try {
-      // Create test data
-      const testData = new ArrayBuffer(fileSizeKB * 1024);
-      
-      const response = await fetch('https://httpbin.org/post', {
-        method: 'POST',
-        body: testData,
-        signal: this.abortController?.signal
-      });
-      
-      await response.json();
-      const endTime = performance.now();
-      
-      const durationSeconds = (endTime - startTime) / 1000;
-      const speedMbps = (testData.byteLength * 8) / (durationSeconds * 1000000);
-      
-      return Math.round(speedMbps * 100) / 100;
-    } catch (error) {
-      // Fallback simulation for demo
-      await this.delay(3000);
-      return Math.round((Math.random() * 60 + 15) * 100) / 100;
+    // Fill with random data to simulate real upload
+    for (let i = 0; i < view.length; i++) {
+      view[i] = Math.floor(Math.random() * 256);
     }
+    
+    const speeds: number[] = [];
+    
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const startTime = performance.now();
+        
+        const response = await fetch('https://httpbin.org/post', {
+          method: 'POST',
+          body: testData,
+          headers: {
+            'Content-Type': 'application/octet-stream',
+          },
+          signal: this.abortController?.signal
+        });
+        
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
+        
+        await response.text(); // Ensure full response is received
+        const endTime = performance.now();
+        
+        const durationSeconds = (endTime - startTime) / 1000;
+        const speedMbps = (testData.byteLength * 8) / (durationSeconds * 1000000);
+        
+        speeds.push(speedMbps);
+        break;
+        
+      } catch (error) {
+        console.log(`Upload attempt ${attempt + 1} failed`);
+        
+        if (attempt === 1) {
+          // Try alternative upload endpoint
+          try {
+            const startTime = performance.now();
+            
+            const formData = new FormData();
+            formData.append('file', new Blob([testData]), 'test.dat');
+            
+            const response = await fetch('https://httpbin.org/anything', {
+              method: 'POST',
+              body: formData,
+              signal: this.abortController?.signal
+            });
+            
+            await response.text();
+            const endTime = performance.now();
+            
+            const durationSeconds = (endTime - startTime) / 1000;
+            const speedMbps = (testData.byteLength * 8) / (durationSeconds * 1000000);
+            
+            speeds.push(speedMbps);
+          } catch {
+            throw new Error('All upload attempts failed');
+          }
+        }
+      }
+    }
+    
+    // Return the best speed result
+    const maxSpeed = Math.max(...speeds);
+    return Math.round(maxSpeed * 100) / 100;
   }
 
   async runFullTest(fileSizeKB: number, onProgress?: (step: string) => void): Promise<SpeedTestResult> {
@@ -127,7 +272,7 @@ class SpeedTestService {
       const downloadSpeed = await this.measureDownloadSpeed(fileSizeKB);
       
       onProgress?.('Testing upload speed...');
-      const uploadSpeed = await this.measureUploadSpeed(fileSizeKB);
+      const uploadSpeed = await this.measureUploadSpeed(Math.min(fileSizeKB, 10240)); // Limit upload to 10MB max
       
       const result: SpeedTestResult = {
         downloadSpeed,
@@ -144,7 +289,7 @@ class SpeedTestService {
       
       return result;
     } catch (error) {
-      throw new Error('Speed test failed');
+      throw new Error('Speed test failed: ' + (error as Error).message);
     }
   }
 
