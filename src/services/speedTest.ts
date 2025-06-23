@@ -1,3 +1,4 @@
+
 interface SpeedTestResult {
   downloadSpeed: number;
   uploadSpeed: number;
@@ -41,10 +42,15 @@ class SpeedTestService {
 
   async getServerInfo(): Promise<ServerInfo> {
     try {
+      // Create timeout controller
+      const timeoutController = new AbortController();
+      const timeoutId = setTimeout(() => timeoutController.abort(), 5000);
+      
       const response = await fetch('https://ipapi.co/json/', { 
-        signal: this.abortController?.signal,
-        timeout: 5000 // 5 second timeout
+        signal: timeoutController.signal
       });
+      
+      clearTimeout(timeoutId);
       const data = await response.json();
       
       return {
