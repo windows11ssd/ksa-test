@@ -8,7 +8,6 @@ interface SpeedGaugeProps {
   label: string;
   color: string;
   size?: number;
-  isLoading?: boolean;
 }
 
 export const SpeedGauge: React.FC<SpeedGaugeProps> = ({
@@ -17,8 +16,7 @@ export const SpeedGauge: React.FC<SpeedGaugeProps> = ({
   unit,
   label,
   color,
-  size = 200,
-  isLoading = false
+  size = 200
 }) => {
   const percentage = Math.min((value / maxValue) * 100, 100);
   const strokeDasharray = 2 * Math.PI * 80; // 80 is the radius
@@ -49,40 +47,21 @@ export const SpeedGauge: React.FC<SpeedGaugeProps> = ({
             strokeDasharray={strokeDasharray}
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
-            className={`transition-all duration-1000 ease-out ${
-              isLoading ? 'animate-pulse' : ''
-            }`}
+            className="transition-all duration-1000 ease-out"
           />
-          {/* Loading animation circle */}
-          {isLoading && (
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r="80"
-              stroke={color}
-              strokeWidth="4"
-              fill="transparent"
-              strokeDasharray="50 50"
-              strokeLinecap="round"
-              className="animate-spin opacity-50"
-              style={{
-                animationDuration: '2s'
-              }}
-            />
-          )}
         </svg>
         
         {/* Center content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className={`text-3xl font-bold text-foreground ${isLoading ? 'animate-pulse' : ''}`}>
-            {isLoading ? '...' : value.toFixed(1)}
+          <div className="text-3xl font-bold text-foreground">
+            {value.toFixed(1)}
           </div>
           <div className="text-sm text-muted-foreground">{unit}</div>
         </div>
       </div>
       
       {/* Label */}
-      <div className={`mt-4 text-lg font-semibold text-foreground ${isLoading ? 'animate-pulse' : ''}`}>
+      <div className="mt-4 text-lg font-semibold text-foreground">
         {label}
       </div>
     </div>
