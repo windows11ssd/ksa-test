@@ -24,6 +24,7 @@ const resources = {
       // File Size Selection
       selectFileSize: "Select Test File Size",
       fileSize: "File Size",
+      largeFileWarning: "Large file selected. This will make the test take longer to complete.",
       
       // History
       history: "Test History",
@@ -54,7 +55,7 @@ const resources = {
   ar: {
     translation: {
       // App Title
-      appTitle: "كسا تيست",
+      appTitle: "KsaTest",
       subtitle: "اختبار سرعة الإنترنت",
       
       // Speed Test
@@ -72,6 +73,7 @@ const resources = {
       // File Size Selection
       selectFileSize: "اختر حجم ملف الاختبار",
       fileSize: "حجم الملف",
+      largeFileWarning: "تم اختيار ملف كبير. هذا سيجعل الاختبار يستغرق وقتاً أطول لإكماله.",
       
       // History
       history: "سجل الاختبارات",
@@ -96,7 +98,7 @@ const resources = {
       
       // PWA
       installApp: "تثبيت التطبيق",
-      installPrompt: "ثبت كسا تيست للحصول على تجربة أفضل"
+      installPrompt: "ثبت KsaTest للحصول على تجربة أفضل"
     }
   }
 };
