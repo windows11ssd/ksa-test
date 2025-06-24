@@ -18,6 +18,7 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
   const [currentStep, setCurrentStep] = useState('');
   const [fileSize, setFileSize] = useState('10240'); // 10MB default
   const [results, setResults] = useState<SpeedTestResult | null>(null);
+  const [testingPhase, setTestingPhase] = useState<'ping' | 'download' | 'upload' | null>(null);
 
   const fileSizeOptions = [
     { value: '1024', label: '1 MB' },
@@ -33,17 +34,30 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
     setIsRunning(true);
     setResults(null);
     setCurrentStep(t('testing'));
+    setTestingPhase(null);
 
     try {
       const result = await speedTestService.runFullTest(
         parseInt(fileSize),
-        (step) => setCurrentStep(step)
+        (step) => {
+          setCurrentStep(step);
+          // Set testing phase based on the step
+          if (step.toLowerCase().includes('ping')) {
+            setTestingPhase('ping');
+          } else if (step.toLowerCase().includes('download')) {
+            setTestingPhase('download');
+          } else if (step.toLowerCase().includes('upload')) {
+            setTestingPhase('upload');
+          }
+        }
       );
       
       setResults(result);
+      setTestingPhase(null);
       onTestComplete?.(result);
     } catch (error) {
       console.error('Speed test failed:', error);
+      setTestingPhase(null);
     } finally {
       setIsRunning(false);
       setCurrentStep('');
@@ -54,6 +68,7 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
     speedTestService.abort();
     setIsRunning(false);
     setCurrentStep('');
+    setTestingPhase(null);
   };
 
   return (
@@ -113,6 +128,7 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
               label={t('download')}
               color="#10b981"
               size={180}
+              isLoading={isRunning && testingPhase === 'download'}
             />
             <SpeedGauge
               value={results?.uploadSpeed || 0}
@@ -121,6 +137,7 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
               label={t('upload')}
               color="#3b82f6"
               size={180}
+              isLoading={isRunning && testingPhase === 'upload'}
             />
             <SpeedGauge
               value={results?.ping || 0}
@@ -129,6 +146,7 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
               label={t('ping')}
               color="#f59e0b"
               size={180}
+              isLoading={isRunning && testingPhase === 'ping'}
             />
           </div>
         )}
