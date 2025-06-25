@@ -1,4 +1,3 @@
-
 interface SpeedTestResult {
   downloadSpeed: number;
   uploadSpeed: number;
@@ -53,8 +52,23 @@ class SpeedTestService {
       clearTimeout(timeoutId);
       const data = await response.json();
       
+      // Prefer IPv4 over IPv6
+      let ipAddress = data.ip;
+      if (data.ip && data.ip.includes(':')) {
+        // This is IPv6, try to get IPv4 instead
+        try {
+          const ipv4Response = await fetch('https://api.ipify.org?format=json');
+          const ipv4Data = await ipv4Response.json();
+          if (ipv4Data.ip && !ipv4Data.ip.includes(':')) {
+            ipAddress = ipv4Data.ip;
+          }
+        } catch (error) {
+          console.log('IPv4 fallback failed, using original IP');
+        }
+      }
+      
       return {
-        ip: data.ip,
+        ip: ipAddress,
         location: `${data.city}, ${data.region}`,
         country: data.country_name
       };
