@@ -14,6 +14,14 @@ interface ServerInfo {
   country: string;
 }
 
+interface PartialResults {
+  downloadSpeed?: number;
+  uploadSpeed?: number;
+  ping?: number;
+  ipAddress?: string;
+  serverLocation?: string;
+}
+
 // Optimized test file URLs with better sizes for faster testing
 const TEST_FILES = {
   1024: 'https://speed.cloudflare.com/__down?bytes=1048576', // 1MB
@@ -209,18 +217,43 @@ class SpeedTestService {
     }
   }
 
-  async runFullTest(fileSizeKB: number, onProgress?: (step: string) => void): Promise<SpeedTestResult> {
+  async runFullTest(
+    fileSizeKB: number, 
+    onProgress?: (step: string) => void,
+    onPartialResult?: (partial: PartialResults) => void
+  ): Promise<SpeedTestResult> {
     this.abortController = new AbortController();
     
     try {
       onProgress?.('Getting server info...');
       const serverInfo = await this.getServerInfo();
       
+      // Show server info immediately
+      onPartialResult?.({
+        ipAddress: serverInfo.ip,
+        serverLocation: serverInfo.location
+      });
+      
       onProgress?.('Measuring ping...');
-      const ping = await this.measurePing(3); // Reduced attempts
+      const ping = await this.measurePing(3);
+      
+      // Show ping result immediately
+      onPartialResult?.({
+        ipAddress: serverInfo.ip,
+        serverLocation: serverInfo.location,
+        ping
+      });
       
       onProgress?.('Testing download speed...');
       const downloadSpeed = await this.measureDownloadSpeed(fileSizeKB);
+      
+      // Show download result immediately
+      onPartialResult?.({
+        ipAddress: serverInfo.ip,
+        serverLocation: serverInfo.location,
+        ping,
+        downloadSpeed
+      });
       
       onProgress?.('Testing upload speed...');
       const uploadSpeed = await this.measureUploadSpeed(fileSizeKB);
@@ -279,4 +312,4 @@ class SpeedTestService {
 }
 
 export const speedTestService = new SpeedTestService();
-export type { SpeedTestResult, ServerInfo };
+export type { SpeedTestResult, ServerInfo, PartialResults };

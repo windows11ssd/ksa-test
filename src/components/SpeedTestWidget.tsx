@@ -13,6 +13,14 @@ interface SpeedTestWidgetProps {
   onTestComplete?: (result: SpeedTestResult) => void;
 }
 
+interface PartialResults {
+  downloadSpeed?: number;
+  uploadSpeed?: number;
+  ping?: number;
+  ipAddress?: string;
+  serverLocation?: string;
+}
+
 export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete }) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -20,6 +28,7 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
   const [currentStep, setCurrentStep] = useState('');
   const [fileSize, setFileSize] = useState('10240'); // 10MB default
   const [results, setResults] = useState<SpeedTestResult | null>(null);
+  const [partialResults, setPartialResults] = useState<PartialResults>({});
 
   const fileSizeOptions = [
     { value: '1024', label: '1 MB' },
@@ -50,12 +59,14 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
   const startTest = async () => {
     setIsRunning(true);
     setResults(null);
+    setPartialResults({});
     setCurrentStep(t('testing'));
 
     try {
       const result = await speedTestService.runFullTest(
         parseInt(fileSize),
-        (step) => setCurrentStep(step)
+        (step) => setCurrentStep(step),
+        (partial) => setPartialResults(partial)
       );
       
       setResults(result);
@@ -72,7 +83,11 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
     speedTestService.abort();
     setIsRunning(false);
     setCurrentStep('');
+    setPartialResults({});
   };
+
+  // Get current values to display (either partial or final results)
+  const currentResults = results || partialResults;
 
   return (
     <Card className="w-full max-w-4xl mx-auto" dir={isRTL ? 'rtl' : 'ltr'}>
@@ -122,10 +137,10 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
         )}
 
         {/* Results Gauges */}
-        {(results || isRunning) && (
+        {(currentResults.downloadSpeed !== undefined || currentResults.uploadSpeed !== undefined || currentResults.ping !== undefined) && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
             <SpeedGauge
-              value={results?.downloadSpeed || 0}
+              value={currentResults.downloadSpeed || 0}
               maxValue={100}
               unit={t('mbps')}
               label={t('download')}
@@ -133,7 +148,7 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
               size={180}
             />
             <SpeedGauge
-              value={results?.uploadSpeed || 0}
+              value={currentResults.uploadSpeed || 0}
               maxValue={100}
               unit={t('mbps')}
               label={t('upload')}
@@ -141,7 +156,7 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
               size={180}
             />
             <SpeedGauge
-              value={results?.ping || 0}
+              value={currentResults.ping || 0}
               maxValue={200}
               unit={t('ms')}
               label={t('ping')}
@@ -152,7 +167,7 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
         )}
 
         {/* Server Info */}
-        {results && (
+        {currentResults.ipAddress && (
           <Card className="mt-6" dir={isRTL ? 'rtl' : 'ltr'}>
             <CardHeader>
               <CardTitle className="text-lg">{t('serverInfo')}</CardTitle>
@@ -160,11 +175,11 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className={isRTL ? 'text-right' : 'text-left'}>
                 <span className="font-medium">{t('ipAddress')}: </span>
-                <span>{results.ipAddress}</span>
+                <span>{currentResults.ipAddress}</span>
               </div>
               <div className={isRTL ? 'text-right' : 'text-left'}>
                 <span className="font-medium">{t('location')}: </span>
-                <span>{results.serverLocation}</span>
+                <span>{currentResults.serverLocation}</span>
               </div>
             </CardContent>
           </Card>
