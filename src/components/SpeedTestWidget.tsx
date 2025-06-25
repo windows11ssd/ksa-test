@@ -19,6 +19,7 @@ interface PartialResults {
   ping?: number;
   ipAddress?: string;
   serverLocation?: string;
+  isp?: string;
 }
 
 export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete }) => {
@@ -172,7 +173,7 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
             <CardHeader>
               <CardTitle className="text-lg">{t('serverInfo')}</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className={isRTL ? 'text-right' : 'text-left'}>
                 <span className="font-medium">{t('ipAddress')}: </span>
                 <span>{currentResults.ipAddress}</span>
@@ -180,6 +181,10 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
               <div className={isRTL ? 'text-right' : 'text-left'}>
                 <span className="font-medium">{t('location')}: </span>
                 <span>{currentResults.serverLocation}</span>
+              </div>
+              <div className={isRTL ? 'text-right' : 'text-left'}>
+                <span className="font-medium">{t('isp')}: </span>
+                <span>{currentResults.isp}</span>
               </div>
             </CardContent>
           </Card>

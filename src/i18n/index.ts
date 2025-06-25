@@ -43,6 +43,7 @@ const resources = {
       serverInfo: "Server Information",
       ipAddress: "IP Address",
       location: "Location",
+      isp: "ISP",
       
       // Footer
       footer: "By Abo Yassir 2025 All Rights Reserved",
@@ -92,6 +93,7 @@ const resources = {
       serverInfo: "معلومات الخادم",
       ipAddress: "عنوان الآي بي",
       location: "الموقع",
+      isp: "مزود الخدمة",
       
       // Footer
       footer: "بواسطة أبو ياسر ٢٠٢٥ جميع الحقوق محفوظة",

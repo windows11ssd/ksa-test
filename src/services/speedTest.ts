@@ -4,6 +4,7 @@ interface SpeedTestResult {
   ping: number;
   ipAddress: string;
   serverLocation: string;
+  isp: string;
   timestamp: number;
   fileSize: number;
 }
@@ -12,6 +13,7 @@ interface ServerInfo {
   ip: string;
   location: string;
   country: string;
+  isp: string;
 }
 
 interface PartialResults {
@@ -20,6 +22,7 @@ interface PartialResults {
   ping?: number;
   ipAddress?: string;
   serverLocation?: string;
+  isp?: string;
 }
 
 // Optimized test file URLs with better sizes for faster testing
@@ -78,14 +81,16 @@ class SpeedTestService {
       return {
         ip: ipAddress,
         location: `${data.city}, ${data.region}`,
-        country: data.country_name
+        country: data.country_name,
+        isp: data.org || 'Unknown ISP'
       };
     } catch (error) {
       // Quick fallback
       return {
         ip: 'Unknown',
         location: 'Saudi Arabia',
-        country: 'Saudi Arabia'
+        country: 'Saudi Arabia',
+        isp: 'Unknown ISP'
       };
     }
   }
@@ -231,7 +236,8 @@ class SpeedTestService {
       // Show server info immediately
       onPartialResult?.({
         ipAddress: serverInfo.ip,
-        serverLocation: serverInfo.location
+        serverLocation: serverInfo.location,
+        isp: serverInfo.isp
       });
       
       onProgress?.('Measuring ping...');
@@ -241,6 +247,7 @@ class SpeedTestService {
       onPartialResult?.({
         ipAddress: serverInfo.ip,
         serverLocation: serverInfo.location,
+        isp: serverInfo.isp,
         ping
       });
       
@@ -251,6 +258,7 @@ class SpeedTestService {
       onPartialResult?.({
         ipAddress: serverInfo.ip,
         serverLocation: serverInfo.location,
+        isp: serverInfo.isp,
         ping,
         downloadSpeed
       });
@@ -264,6 +272,7 @@ class SpeedTestService {
         ping,
         ipAddress: serverInfo.ip,
         serverLocation: serverInfo.location,
+        isp: serverInfo.isp,
         timestamp: Date.now(),
         fileSize: fileSizeKB
       };
