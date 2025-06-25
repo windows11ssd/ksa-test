@@ -75,14 +75,14 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="w-full max-w-4xl mx-auto" dir={isRTL ? 'rtl' : 'ltr'}>
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">{t('subtitle')}</CardTitle>
       </CardHeader>
       
       <CardContent className="space-y-6">
         {/* File Size Selection */}
-        <div className={`flex items-center justify-center space-x-4 ${isRTL ? 'space-x-reverse' : ''}`}>
+        <div className={`flex items-center justify-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <label className="text-sm font-medium">{t('fileSize')}:</label>
           <Select value={fileSize} onValueChange={handleFileSizeChange} disabled={isRunning}>
             <SelectTrigger className="w-32">
@@ -115,7 +115,7 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
 
         {/* Progress */}
         {isRunning && (
-          <div className={`flex items-center justify-center space-x-2 ${isRTL ? 'space-x-reverse' : ''}`}>
+          <div className={`flex items-center justify-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <Loader2 className="w-5 h-5 animate-spin" />
             <span className="text-sm text-muted-foreground">{currentStep}</span>
           </div>
@@ -153,7 +153,7 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
 
         {/* Server Info */}
         {results && (
-          <Card className="mt-6">
+          <Card className="mt-6" dir={isRTL ? 'rtl' : 'ltr'}>
             <CardHeader>
               <CardTitle className="text-lg">{t('serverInfo')}</CardTitle>
             </CardHeader>

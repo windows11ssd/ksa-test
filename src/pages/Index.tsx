@@ -14,8 +14,10 @@ interface IndexProps {
 }
 
 const Index: React.FC<IndexProps> = ({ theme, setTheme }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [refreshHistory, setRefreshHistory] = useState(0);
+
+  const isRTL = i18n.language === 'ar';
 
   const handleTestComplete = (result: SpeedTestResult) => {
     // Refresh history when test completes
@@ -23,7 +25,7 @@ const Index: React.FC<IndexProps> = ({ theme, setTheme }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -37,7 +39,7 @@ const Index: React.FC<IndexProps> = ({ theme, setTheme }) => {
         <PWAInstall />
 
         {/* Main Content */}
-        <Tabs defaultValue="test" className="w-full">
+        <Tabs defaultValue="test" className="w-full" dir={isRTL ? 'rtl' : 'ltr'}>
           <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="test">{t('startTest')}</TabsTrigger>
             <TabsTrigger value="history">{t('history')}</TabsTrigger>
