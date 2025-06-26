@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SpeedGauge } from './SpeedGauge';
 import { speedTestService, SpeedTestResult } from '@/services/speedTest';
-import { Loader2, Play, Square } from 'lucide-react';
+import { Loader2, Play, Square, WifiOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface SpeedTestWidgetProps {
@@ -57,7 +56,39 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
     }
   };
 
+  const checkInternetConnection = async (): Promise<boolean> => {
+    if (!navigator.onLine) {
+      return false;
+    }
+    
+    try {
+      // Try to fetch a small resource to verify actual connectivity
+      const response = await fetch('https://www.google.com/favicon.ico', {
+        method: 'HEAD',
+        mode: 'no-cors',
+        cache: 'no-cache',
+        signal: AbortSignal.timeout(5000)
+      });
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
   const startTest = async () => {
+    // Check internet connectivity first
+    const isConnected = await checkInternetConnection();
+    
+    if (!isConnected) {
+      toast({
+        title: t('noInternetConnection'),
+        description: t('pleaseCheckConnection'),
+        variant: "destructive",
+        duration: 5000,
+      });
+      return;
+    }
+
     setIsRunning(true);
     setResults(null);
     setPartialResults({});
@@ -74,6 +105,12 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
       onTestComplete?.(result);
     } catch (error) {
       console.error('Speed test failed:', error);
+      toast({
+        title: t('testFailed'),
+        description: t('testFailedDescription'),
+        variant: "destructive",
+        duration: 5000,
+      });
     } finally {
       setIsRunning(false);
       setCurrentStep('');
@@ -113,6 +150,14 @@ export const SpeedTestWidget: React.FC<SpeedTestWidgetProps> = ({ onTestComplete
             </SelectContent>
           </Select>
         </div>
+
+        {/* Internet Connection Warning */}
+        {!navigator.onLine && (
+          <div className={`flex items-center justify-center gap-2 p-3 bg-destructive/10 text-destructive rounded-lg ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <WifiOff className="w-5 h-5" />
+            <span className="text-sm font-medium">{t('noInternetWarning')}</span>
+          </div>
+        )}
 
         {/* Start/Stop Button */}
         <div className="flex justify-center">
