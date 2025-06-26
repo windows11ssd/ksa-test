@@ -74,16 +74,16 @@ export const SaudiFrequencyBands: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="min-w-[120px]">
+                <TableHead className={`min-w-[120px] ${isRTL ? 'text-right' : 'text-left'}`}>
                   {isRTL ? 'المشغل' : 'Operator'}
                 </TableHead>
-                <TableHead className="min-w-[100px]">
+                <TableHead className={`min-w-[100px] ${isRTL ? 'text-right' : 'text-left'}`}>
                   {isRTL ? 'التقنية' : 'Technology'}
                 </TableHead>
-                <TableHead className="min-w-[100px]">
+                <TableHead className={`min-w-[100px] ${isRTL ? 'text-right' : 'text-left'}`}>
                   {isRTL ? 'النطاق' : 'Band'}
                 </TableHead>
-                <TableHead className="min-w-[200px]">
+                <TableHead className={`min-w-[200px] ${isRTL ? 'text-right' : 'text-left'}`}>
                   {isRTL ? 'التردد' : 'Frequency'}
                 </TableHead>
               </TableRow>
@@ -91,10 +91,10 @@ export const SaudiFrequencyBands: React.FC = () => {
             <TableBody>
               {saudiTelecomBands.map((band, index) => (
                 <TableRow key={index}>
-                  <TableCell className="font-medium">{band.operator}</TableCell>
-                  <TableCell>{band.technology}</TableCell>
-                  <TableCell>{band.band}</TableCell>
-                  <TableCell className="font-mono text-sm">{band.frequency}</TableCell>
+                  <TableCell className={`font-medium ${isRTL ? 'text-right' : 'text-left'}`}>{band.operator}</TableCell>
+                  <TableCell className={isRTL ? 'text-right' : 'text-left'}>{band.technology}</TableCell>
+                  <TableCell className={isRTL ? 'text-right' : 'text-left'}>{band.band}</TableCell>
+                  <TableCell className={`font-mono text-sm ${isRTL ? 'text-right' : 'text-left'}`}>{band.frequency}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

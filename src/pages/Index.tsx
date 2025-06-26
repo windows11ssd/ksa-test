@@ -50,6 +50,12 @@ const Index: React.FC<IndexProps> = ({ theme, setTheme }) => {
 
           <TabsContent value="test" className="space-y-6">
             <SpeedTestWidget onTestComplete={handleTestComplete} />
+            
+            {/* Networking Information Section - Only on test tab */}
+            <div className="mt-16 space-y-8">
+              <NetworkingTerms />
+              <SaudiFrequencyBands />
+            </div>
           </TabsContent>
 
           <TabsContent value="history" className="space-y-6">
@@ -60,12 +66,6 @@ const Index: React.FC<IndexProps> = ({ theme, setTheme }) => {
             <SettingsPanel theme={theme} setTheme={setTheme} />
           </TabsContent>
         </Tabs>
-
-        {/* Networking Information Section */}
-        <div className="mt-16 space-y-8">
-          <NetworkingTerms />
-          <SaudiFrequencyBands />
-        </div>
 
         {/* Footer */}
         <footer className="mt-16 text-center text-sm text-muted-foreground border-t pt-8">
