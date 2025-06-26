@@ -6,6 +6,8 @@ import { SpeedTestWidget } from '@/components/SpeedTestWidget';
 import { TestHistory } from '@/components/TestHistory';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { PWAInstall } from '@/components/PWAInstall';
+import { NetworkingTerms } from '@/components/NetworkingTerms';
+import { SaudiFrequencyBands } from '@/components/SaudiFrequencyBands';
 import { SpeedTestResult } from '@/services/speedTest';
 
 interface IndexProps {
@@ -58,6 +60,12 @@ const Index: React.FC<IndexProps> = ({ theme, setTheme }) => {
             <SettingsPanel theme={theme} setTheme={setTheme} />
           </TabsContent>
         </Tabs>
+
+        {/* Networking Information Section */}
+        <div className="mt-16 space-y-8">
+          <NetworkingTerms />
+          <SaudiFrequencyBands />
+        </div>
 
         {/* Footer */}
         <footer className="mt-16 text-center text-sm text-muted-foreground border-t pt-8">
