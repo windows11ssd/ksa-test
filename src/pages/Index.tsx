@@ -6,6 +6,8 @@ import { SpeedTestWidget } from '@/components/SpeedTestWidget';
 import { TestHistory } from '@/components/TestHistory';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { PWAInstall } from '@/components/PWAInstall';
+import { NetworkingTerms } from '@/components/NetworkingTerms';
+import { SaudiFrequencyBands } from '@/components/SaudiFrequencyBands';
 import { SpeedTestResult } from '@/services/speedTest';
 
 interface IndexProps {
@@ -48,6 +50,12 @@ const Index: React.FC<IndexProps> = ({ theme, setTheme }) => {
 
           <TabsContent value="test" className="space-y-6">
             <SpeedTestWidget onTestComplete={handleTestComplete} />
+            
+            {/* Networking Information Section - Only on test tab */}
+            <div className="mt-16 space-y-8">
+              <NetworkingTerms />
+              <SaudiFrequencyBands />
+            </div>
           </TabsContent>
 
           <TabsContent value="history" className="space-y-6">
