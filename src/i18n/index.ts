@@ -26,6 +26,13 @@ const resources = {
       fileSize: "File Size",
       largeFileWarning: "Large file selected. This will make the test take longer to complete.",
       
+      // Connection Errors
+      noInternetConnection: "No Internet Connection",
+      pleaseCheckConnection: "Please check your internet connection and try again.",
+      noInternetWarning: "No internet connection detected",
+      testFailed: "Test Failed",
+      testFailedDescription: "The speed test could not be completed. Please try again.",
+      
       // History
       history: "Test History",
       noHistory: "No test history available",
@@ -75,6 +82,13 @@ const resources = {
       selectFileSize: "اختر حجم ملف الاختبار",
       fileSize: "حجم الملف",
       largeFileWarning: "تم اختيار ملف كبير. هذا سيجعل الاختبار يستغرق وقتاً أطول لإكماله.",
+      
+      // Connection Errors
+      noInternetConnection: "لا يوجد اتصال بالإنترنت",
+      pleaseCheckConnection: "يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.",
+      noInternetWarning: "لم يتم اكتشاف اتصال بالإنترنت",
+      testFailed: "فشل الاختبار",
+      testFailedDescription: "لم يتم إكمال اختبار السرعة. يرجى المحاولة مرة أخرى.",
       
       // History
       history: "سجل الاختبارات",
